@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2d4a22">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="حاسبة الزيتون">
+    <title>حاسبة مردود الزيتون والأرباح</title>
+    
+    <!-- أيقونة التطبيق المدمجة (Data URI SVG) للعمل دون إنترنت -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232d4a22'/%3E%3Cpath d='M32 54c12 0 22-10 22-22-12 0-22 10-22 22z' fill='%234a7c36'/%3E%3Cpath d='M32 54c-12 0-22-10-22-22 12 0 22 10 22 22z' fill='%23639e4b'/%3E%3Cpath d='M32 54V18' stroke='%23d4a338' stroke-width='4' stroke-linecap='round'/%3E%3Cellipse cx='41' cy='16' rx='6' ry='9' transform='rotate(30 41 16)' fill='%23d4a338'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- ملف Manifest لدعم التثبيت على الأندرويد كـ PWA / APK -->
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        /* متغيرات الألوان والتصميم */
+        :root {
+            --olive-dark: #2d4a22;
+            --olive-primary: #4a7c36;
+            --olive-light: #eef4eb;
+            --olive-border: #d5e2cf;
+            --gold-accent: #d4a338;
+            --gold-light: #fdf8ec;
+            --gold-border: #f0dfa8;
+            --bg-main: #f8f9f5;
+            --card-bg: #ffffff;
+            --text-dark: #1e2d18;
+            --text-muted: #5c6e54;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --exceptional: #0f766e;
+            --exceptional-bg: #f0fdfa;
+            --shadow-sm: 0 2px 8px rgba(45, 74, 34, 0.06);
+            --shadow-md: 0 6px 20px rgba(45, 74, 34, 0.09);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        /* إعادة ضبط أساسية وخطوط النظام العربية الواضحة دون الحاجة للإنترنت */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Tahoma, "Droid Arabic Kufi", "Noto Sans Arabic", Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding-bottom: 36px;
+            overflow-x: hidden;
+        }
+
+        /* الترويسة */
+        .app-header {
+            background: linear-gradient(135deg, var(--olive-dark) 0%, #3a612b 100%);
+            color: #ffffff;
+            padding: 20px 16px 24px;
+            border-bottom: 4px solid var(--gold-accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-container {
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(212, 163, 56, 0.4);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+        }
+
+        .brand-subtitle {
+            font-size: 0.85rem;
+            color: #d8e6d2;
+            margin-top: 2px;
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 9px 14px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-reset:active {
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.24);
+        }
+
+        /* الحاوية الرئيسية */
+        .main-container {
+            max-width: 960px;
+            margin: 20px auto 0;
+            padding: 0 14px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        @media (min-width: 820px) {
+            .main-container {
+                grid-template-columns: 1.05fr 1.15fr;
+                align-items: start;
+            }
+        }
+
+        /* البطاقات */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--olive-border);
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--olive-light);
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--olive-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot-gold {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gold-accent);
+            display: inline-block;
+        }
+
+        .badge-live {
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: var(--olive-light);
+            color: var(--olive-primary);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* حقول الإدخال */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 7px;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            background: var(--bg-main);
+            border: 2px solid var(--olive-border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px 12px 62px;
+            font-family: inherit;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--olive-dark);
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: var(--olive-primary);
+            background: #ffffff;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-unit {
+            position: absolute;
+            left: 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* أزرار الاختصار السريعة */
+        .quick-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .pill-btn {
+            background: var(--olive-light);
+            color: var(--olive-dark);
+            border: 1px solid var(--olive-border);
+            border-radius: 9px;
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pill-btn:active {
+            transform: scale(0.95);
+        }
+
+        .pill-btn.active {
+            background: var(--olive-dark);
+            color: #ffffff;
+            border-color: var(--olive-dark);
+        }
+
+        .pill-btn.gold {
+            background: var(--gold-light);
+            color: #8a6314;
+            border-color: var(--gold-border);
+        }
+
+        /* فاصل قسم التسعير */
+        .section-divider {
+            margin: 20px 0 16px;
+            padding-top: 16px;
+            border-top: 2px dashed var(--olive-border);
+        }
+
+        /* زر التبديل بين سعر البيدون وسعر الليتر */
+        .toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: var(--olive-light);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--olive-border);
+            margin-bottom: 12px;
+        }
+
+        .toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 9px 8px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: var(--olive-dark);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(45, 74, 34, 0.2);
+        }
+
+        /* صف العملة */
+        .currency-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .currency-input {
+            width: 90px !important;
+            padding: 8px 10px !important;
+            font-size: 0.95rem !important;
+            text-align: center;
+        }
+
+        /* قسم النتائج */
+        .results-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* بطاقة نسبة الاستخلاص */
+        .yield-hero {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .yield-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .yield-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--olive-dark);
+            line-height: 1.1;
+            margin-top: 4px;
+        }
+
+        .quality-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            border: 1px solid transparent;
+        }
+
+        .quality-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        /* شريط التقدم */
+        .progress-wrapper {
+            margin-top: 16px;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: var(--olive-light);
+            border-radius: 99px;
+            overflow: hidden;
+            border: 1px solid var(--olive-border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 99px;
+            transition: width 0.4s ease, background-color 0.3s ease;
+        }
+
+        .quality-desc {
+            margin-top: 12px;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            background: var(--bg-main);
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--olive-light);
+        }
+
+        /* شبكة بطاقات الكميات */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-card {
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            border: 1px solid var(--olive-border);
+        }
+
+        .metric-card.liters {
+            background: linear-gradient(145deg, #fffdf7 0%, var(--gold-light) 100%);
+            border-color: var(--gold-border);
+        }
+
+        .metric-card.kilograms {
+            background: linear-gradient(145deg, #ffffff 0%, var(--olive-light) 100%);
+            border-color: var(--olive-border);
+        }
+
+        .metric-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: var(--olive-dark);
+            margin: 4px 0;
+        }
+
+        .metric-card.liters .metric-value {
+            color: #8a5d0b;
+        }
+
+        .metric-unit {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .metric-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* بطاقة الأرباح والمالية */
+        .finance-card {
+            background: linear-gradient(135deg, var(--olive-dark) 0%, #243b1b 100%);
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            border: 2px solid var(--gold-accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .finance-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        .finance-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #f6d378;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .finance-main-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .finance-label {
+            font-size: 0.85rem;
+            color: #d3e2cd;
+        }
+
+        .finance-amount {
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .finance-currency {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f6d378;
+            margin-right: 4px;
+        }
+
+        .net-profit-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 163, 56, 0.45);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .net-profit-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #f6d378;
+        }
+
+        .net-profit-val {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: #86efac;
+        }
+
+        .finance-equivalents {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: #d3e2cd;
+            background: rgba(0, 0, 0, 0.18);
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* بطاقة معدل الاستهلاك */
+        .consumption-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-main);
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--olive-light);
+            margin-bottom: 8px;
+        }
+
+        .consumption-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .consumption-text {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        .consumption-val {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--olive-dark);
+        }
+
+        /* زر نسخ التقرير */
+        .btn-copy {
+            width: 100%;
+            background: var(--olive-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 15px 20px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(74, 124, 54, 0.25);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-copy:active {
+            transform: scale(0.98);
+            background: var(--olive-dark);
+        }
+
+        /* إشعار النسخ المنبثق */
+        .toast {
+            position: fixed;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--olive-dark);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 14px;
+            border: 1px solid var(--gold-accent);
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الترويسة -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-box">
+                <div class="brand-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4a338" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9z" fill="#d4a338" fill-opacity="0.25"/>
+                        <path d="M12 22c-4.97 0-9-4.03-9-9 4.97 0 9 4.03 9 9z"/>
+                        <path d="M12 22V7"/>
+                        <path d="M12 11c2.5-2.5 5.5-3 8-2-1 2.5-2.5 4.5-8 2z" fill="#d4a338" fill-opacity="0.25"/>
+                        <path d="M12 7c-2.5-2.5-5.5-3-8-2 1 2.5 2.5 4.5 8 2z"/>
+                        <ellipse cx="15.5" cy="5.5" rx="2" ry="3" transform="rotate(30 15.5 5.5)" fill="#d4a338" stroke="none"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">حاسبة مردود الزيتون والأرباح</h1>
+                    <p class="brand-subtitle">حساب الاستخلاص بالليتر والكيلوغرام وصافي الأرباح (يعمل بدون إنترنت)</p>
+                </div>
+            </div>
+            <button type="button" id="resetBtn" class="btn-reset">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                <span>إعادة ضبط</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-container">
+        
+        <!-- قسم المدخلات -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title"><span class="dot-gold"></span> بيانات المحصول والعصر</h2>
+                <span class="badge-live">حساب فوري</span>
+            </div>
+
+            <!-- 1. وزن الزيتون -->
+            <div class="form-group">
+                <div class="label-row">
+                    <label for="oliveWeight">وزن الزيتون (كغ)</label>
+                </div>
+                <div class="input-wrapper">
+                    <input type="number" id="oliveWeight" value="500" min="0" step="any" inputmode="decimal">
+                    <span class="input-unit">كغ</span>
+                </div>
+                <div class="quick-pills">
+                    <button type="button" class="pill-btn" onclick="addWeight(100)">+100 كغ</button>
+                    <button type="button" class="pill-btn" onclick="addWeight(50)">+50 كغ</button>
+                    <button type="button" class="pill-btn" onclick="addWeight(-50)">-50 كغ</button>
+                </div>
+            </div>
+
+            <!-- 2. عدد البيدونات -->
+            <div class="form-group">
+                <div class="label-row">
+                    <label for="containerCount">عدد البيدونات / التنكات</label>
+                </div>
+                <div class="input-wrapper">
+                    <input type="number" id="containerCount" value="5.25" min="0" step="0.05" inputmode="decimal">
+                    <span class="input-unit">بيدون</span>
+                </div>
+                <div class="quick-pills">
+                    <button type="button" class="pill-btn gold" onclick="addContainers(0.25)">+ ربع (0.25)</button>
+                    <button type="button" class="pill-btn gold" onclick="addContainers(0.5)">+ نصف (0.5)</button>
+                    <button type="button" class="pill-btn" onclick="addContainers(1)">+ 1 كامل</button>
+                </div>
+            </div>
+
+            <!-- 3. سعة البيدون الواحد -->
+            <div class="form-group">
+                <div class="label-row">
+                    <label for="containerCapacity">سعة البيدون الواحد (ليتر)</label>
+                    <div class="quick-pills" style="margin-top: 0;">
+                        <button type="button" class="pill-btn cap-btn active" data-cap="20" onclick="setCapacity(20)">20 لتر</button>
+                        <button type="button" class="pill-btn cap-btn" data-cap="18" onclick="setCapacity(18)">18 لتر</button>
+                        <button type="button" class="pill-btn cap-btn" data-cap="16" onclick="setCapacity(16)">16 لتر</button>
+                    </div>
+                </div>
+                <div class="input-wrapper">
+                    <input type="number" id="containerCapacity" value="20" min="1" step="any" inputmode="decimal">
+                    <span class="input-unit">ليتر</span>
+                </div>
+            </div>
+
+            <!-- قسم التسعير والأرباح -->
+            <div class="section-divider">
+                <div class="card-header" style="border-bottom: none; margin-bottom: 10px; padding-bottom: 0;">
+                    <h2 class="card-title"><span class="dot-gold"></span> التسعير وحساب الأرباح</h2>
+                </div>
+
+                <!-- اختيار طريقة التسعير -->
+                <div class="toggle-group">
+                    <button type="button" id="modeContainerBtn" class="toggle-btn active" onclick="setPricingMode('container')">سعر البيدون الواحد</button>
+                    <button type="button" id="modeLiterBtn" class="toggle-btn" onclick="setPricingMode('liter')">سعر الليتر الواحد</button>
+                </div>
+
+                <!-- اختيار العملة -->
+                <div class="currency-row">
+                    <label for="currencyInput" style="font-size: 0.85rem; white-space: nowrap;">العملة:</label>
+                    <input type="text" id="currencyInput" class="currency-input" value="$" maxlength="8">
+                    <div class="quick-pills" style="margin-top: 0;">
+                        <button type="button" class="pill-btn curr-btn" onclick="setCurrency('ل.س')">ل.س</button>
+                        <button type="button" class="pill-btn curr-btn active" onclick="setCurrency('$')">$</button>
+                        <button type="button" class="pill-btn curr-btn" onclick="setCurrency('€')">€</button>
+                        <button type="button" class="pill-btn curr-btn" onclick="setCurrency('دينار')">دينار</button>
+                    </div>
+                </div>
+
+                <!-- السعر -->
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="unitPrice" id="unitPriceLabel">سعر البيدون الواحد</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="unitPrice" value="90" min="0" step="any" inputmode="decimal" placeholder="أدخل السعر">
+                        <span class="input-unit" id="priceCurrencyUnit">$</span>
+                    </div>
+                </div>
+
+                <!-- تكاليف العصر والقطاف -->
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="expensesInput">تكاليف العصر والقطاف (اختياري)</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="number" id="expensesInput" value="0" min="0" step="any" inputmode="decimal" placeholder="0">
+                        <span class="input-unit" id="expenseCurrencyUnit">$</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم النتائج والتقارير -->
+        <section class="results-stack">
+
+            <!-- بطاقة الملخص المالي والأرباح -->
+            <div class="finance-card">
+                <div class="finance-header">
+                    <span class="finance-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2"/>
+                            <circle cx="12" cy="12" r="2"/>
+                            <path d="M6 12h.01M18 12h.01"/>
+                        </svg>
+                        إجمالي المبيعات والأرباح
+                    </span>
+                    <span style="font-size: 0.75rem; color: #d3e2cd;" id="pricingModeBadge">حسب البيدون</span>
+                </div>
+
+                <div class="finance-main-row">
+                    <span class="finance-label">إجمالي قيمة الزيت:</span>
+                    <div>
+                        <span class="finance-amount" id="totalRevenueVal">472.5</span>
+                        <span class="finance-currency" id="revCurrencyText">$</span>
+                    </div>
+                </div>
+
+                <!-- صافي الربح بعد المصاريف -->
+                <div class="net-profit-box" id="netProfitBox">
+                    <span class="net-profit-label">صافي الربح بعد المصاريف:</span>
+                    <div>
+                        <span class="net-profit-val" id="netProfitVal">472.5</span>
+                        <span class="finance-currency" id="netCurrencyText">$</span>
+                    </div>
+                </div>
+
+                <!-- أسعار المقارنة المكافئة -->
+                <div class="finance-equivalents">
+                    <div>سعر الليتر المكافئ: <strong id="eqLiterPrice" style="color: #fff;">4.5</strong> <span class="eq-curr">$</span></div>
+                    <div>سعر البيدون المكافئ: <strong id="eqContainerPrice" style="color: #fff;">90</strong> <span class="eq-curr">$</span></div>
+                </div>
+            </div>
+
+            <!-- بطاقة نسبة الاستخلاص وتقييم الجودة -->
+            <div class="card">
+                <div class="yield-hero">
+                    <div>
+                        <span class="yield-label">نسبة الاستخلاص بالوزن (%)</span>
+                        <div class="yield-number" id="weightYieldVal">19.24%</div>
+                    </div>
+                    <div class="quality-badge" id="qualityBadge">
+                        <span class="quality-dot" id="qualityDot"></span>
+                        <span id="qualityText">جيد جداً وممتاز</span>
+                    </div>
+                </div>
+
+                <div class="progress-wrapper">
+                    <div class="progress-labels">
+                        <span>ضعيف (&lt;15%)</span>
+                        <span>متوسط (15-18%)</span>
+                        <span>ممتاز (18-22%)</span>
+                        <span>استثنائي (&gt;22%)</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="yieldProgressFill"></div>
+                    </div>
+                    <p class="quality-desc" id="qualityDesc">
+                        نسبة استخلاص ممتازة وتدل على نضج مثالي للثمار وجودة عالية في العصر.
+                    </p>
+                </div>
+            </div>
+
+            <!-- بطاقتا الكميات (ليتر وكيلوغرام) -->
+            <div class="metrics-grid">
+                <div class="metric-card liters">
+                    <div class="metric-title">إجمالي الزيت بالليتر</div>
+                    <div class="metric-value"><span id="totalLitersVal">105</span> <span class="metric-unit">ليتر</span></div>
+                    <div class="metric-sub">المردود: <strong id="litersPer100Val">21</strong> ليتر / 100 كغ</div>
+                </div>
+
+                <div class="metric-card kilograms">
+                    <div class="metric-title">وزن الزيت الصافي (كغ)</div>
+                    <div class="metric-value"><span id="totalKgVal">96.18</span> <span class="metric-unit">كغ</span></div>
+                    <div class="metric-sub">كثافة الزيت: 0.916 كغ/لتر</div>
+                </div>
+            </div>
+
+            <!-- بطاقة معدل الاستهلاك -->
+            <div class="card">
+                <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                    <h3 class="card-title" style="font-size: 0.95rem;"><span class="dot-gold"></span> معدل الاستهلاك</h3>
+                </div>
+                <div class="consumption-row">
+                    <span class="consumption-text">كيلو زيتون لكل <strong>1 كغ زيت</strong>:</span>
+                    <span class="consumption-val"><span id="olivesPerKgVal">5.2</span> كغ زيتون</span>
+                </div>
+                <div class="consumption-row">
+                    <span class="consumption-text">كيلو زيتون لكل <strong>1 ليتر زيت</strong>:</span>
+                    <span class="consumption-val"><span id="olivesPerLiterVal">4.76</span> كغ زيتون</span>
+                </div>
+            </div>
+
+            <!-- زر نسخ التقرير الكامل -->
+            <button type="button" id="copyReportBtn" class="btn-copy">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span>نسخ التقرير الكامل (واتساب / تيليجرام)</span>
+            </button>
+
+        </section>
+    </main>
+
+    <!-- إشعار منبثق -->
+    <div id="toast" class="toast">تم نسخ التقرير الكامل إلى الحافظة!</div>
+
+    <script>
+        // الثوابت العلمية
+        const OLIVE_OIL_DENSITY = 0.916;
+        let pricingMode = 'container'; // 'container' أو 'liter'
+
+        // عناصر الإدخال
+        const oliveWeightEl = document.getElementById('oliveWeight');
+        const containerCountEl = document.getElementById('containerCount');
+        const containerCapacityEl = document.getElementById('containerCapacity');
+        const unitPriceEl = document.getElementById('unitPrice');
+        const expensesEl = document.getElementById('expensesInput');
+        const currencyEl = document.getElementById('currencyInput');
+
+        // تنسيق الأرقام بفواصل الآلاف وتقريب الكسور
+        function formatNum(num, decimals = 2) {
+            if (!isFinite(num) || isNaN(num)) return '0';
+            const rounded = Number(num.toFixed(decimals));
+            return rounded.toLocaleString('en-US', { maximumFractionDigits: decimals });
+        }
+
+        // تنسيق المبالغ المالية
+        function formatMoney(num) {
+            if (!isFinite(num) || isNaN(num)) return '0';
+            const decimals = Math.abs(num) >= 1000 ? 0 : 2;
+            const rounded = Number(num.toFixed(decimals));
+            return rounded.toLocaleString('en-US', { maximumFractionDigits: decimals });
+        }
+
+        // تغيير طريقة التسعير
+        function setPricingMode(mode) {
+            pricingMode = mode;
+            const modeContainerBtn = document.getElementById('modeContainerBtn');
+            const modeLiterBtn = document.getElementById('modeLiterBtn');
+            const unitPriceLabel = document.getElementById('unitPriceLabel');
+            const pricingModeBadge = document.getElementById('pricingModeBadge');
+
+            if (mode === 'container') {
+                modeContainerBtn.classList.add('active');
+                modeLiterBtn.classList.remove('active');
+                unitPriceLabel.textContent = 'سعر البيدون الواحد';
+                pricingModeBadge.textContent = 'حسب البيدون';
+            } else {
+                modeLiterBtn.classList.add('active');
+                modeContainerBtn.classList.remove('active');
+                unitPriceLabel.textContent = 'سعر الليتر الواحد';
+                pricingModeBadge.textContent = 'حسب الليتر';
+            }
+            calculateAll();
+        }
+
+        // تغيير العملة
+        function setCurrency(curr) {
+            currencyEl.value = curr;
+            document.querySelectorAll('.curr-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.trim() === curr);
+            });
+            calculateAll();
+        }
+
+        // تعديل وزن الزيتون بالأزرار السريعة
+        function addWeight(delta) {
+            const val = parseFloat(oliveWeightEl.value) || 0;
+            oliveWeightEl.value = Math.max(0, val + delta);
+            calculateAll();
+        }
+
+        // تعديل عدد البيدونات بالأزرار السريعة
+        function addContainers(delta) {
+            const val = parseFloat(containerCountEl.value) || 0;
+            containerCountEl.value = Math.max(0, Math.round((val + delta) * 100) / 100);
+            calculateAll();
+        }
+
+        // تحديد سعة البيدون
+        function setCapacity(cap) {
+            containerCapacityEl.value = cap;
+            updateCapacityButtons(cap);
+            calculateAll();
+        }
+
+        function updateCapacityButtons(cap) {
+            document.querySelectorAll('.cap-btn').forEach(btn => {
+                const btnCap = parseFloat(btn.getAttribute('data-cap'));
+                btn.classList.toggle('active', btnCap === cap);
+            });
+        }
+
+        // الدالة الرئيسية للحساب الفوري
+        function calculateAll() {
+            const oliveWeight = parseFloat(oliveWeightEl.value) || 0;
+            const containers = parseFloat(containerCountEl.value) || 0;
+            const capacity = parseFloat(containerCapacityEl.value) || 0;
+            const price = parseFloat(unitPriceEl.value) || 0;
+            const expenses = parseFloat(expensesEl.value) || 0;
+            const currency = currencyEl.value.trim() || '$';
+
+            updateCapacityButtons(capacity);
+
+            // تحديث رموز العملة في الواجهة
+            document.getElementById('priceCurrencyUnit').textContent = currency;
+            document.getElementById('expenseCurrencyUnit').textContent = currency;
+            document.getElementById('revCurrencyText').textContent = currency;
+            document.getElementById('netCurrencyText').textContent = currency;
+            document.querySelectorAll('.eq-curr').forEach(el => el.textContent = currency);
+
+            // حسابات الكميات والمردود
+            const totalLiters = containers * capacity;
+            const totalKg = totalLiters * OLIVE_OIL_DENSITY;
+
+            const weightYield = oliveWeight > 0 ? (totalKg / oliveWeight) * 100 : 0;
+            const volumePer100 = oliveWeight > 0 ? (totalLiters / oliveWeight) * 100 : 0;
+            const olivesPerKg = (oliveWeight > 0 && totalKg > 0) ? (oliveWeight / totalKg) : 0;
+            const olivesPerLiter = (oliveWeight > 0 && totalLiters > 0) ? (oliveWeight / totalLiters) : 0;
+
+            // الحسابات المالية
+            let totalRevenue = 0;
+            let eqLiterPrice = 0;
+            let eqContainerPrice = 0;
+
+            if (pricingMode === 'container') {
+                totalRevenue = containers * price;
+                eqContainerPrice = price;
+                eqLiterPrice = capacity > 0 ? (price / capacity) : 0;
+            } else {
+                totalRevenue = totalLiters * price;
+                eqLiterPrice = price;
+                eqContainerPrice = price * capacity;
+            }
+
+            const netProfit = totalRevenue - expenses;
+
+            // تحديث قيم الإنتاج
+            document.getElementById('totalLitersVal').textContent = formatNum(totalLiters, 2);
+            document.getElementById('totalKgVal').textContent = formatNum(totalKg, 2);
+            document.getElementById('weightYieldVal').textContent = formatNum(weightYield, 2) + '%';
+            document.getElementById('litersPer100Val').textContent = formatNum(volumePer100, 1);
+            document.getElementById('olivesPerKgVal').textContent = formatNum(olivesPerKg, 2);
+            document.getElementById('olivesPerLiterVal').textContent = formatNum(olivesPerLiter, 2);
+
+            // تحديث القيم المالية
+            document.getElementById('totalRevenueVal').textContent = formatMoney(totalRevenue);
+            document.getElementById('netProfitVal').textContent = formatMoney(netProfit);
+            document.getElementById('eqLiterPrice').textContent = formatMoney(eqLiterPrice);
+            document.getElementById('eqContainerPrice').textContent = formatMoney(eqContainerPrice);
+
+            // تلوين صافي الربح في حال وجود خسارة
+            const netProfitValEl = document.getElementById('netProfitVal');
+            if (netProfit < 0) {
+                netProfitValEl.style.color = '#fca5a5';
+            } else {
+                netProfitValEl.style.color = '#86efac';
+            }
+
+            // تحديث شارة الجودة وشريط التقدم
+            updateQualityIndicator(weightYield);
+        }
+
+        // تحديث مؤشر الجودة بناءً على نسبة الاستخلاص بالوزن
+        function updateQualityIndicator(yieldPct) {
+            const badge = document.getElementById('qualityBadge');
+            const dot = document.getElementById('qualityDot');
+            const text = document.getElementById('qualityText');
+            const desc = document.getElementById('qualityDesc');
+            const fill = document.getElementById('yieldProgressFill');
+
+            // نسبة الشريط البصرية (الحد الأقصى للعرض 26%)
+            const barWidth = yieldPct <= 0 ? 0 : Math.min(Math.max((yieldPct / 26) * 100, 4), 100);
+            fill.style.width = barWidth + '%';
+
+            if (yieldPct <= 0) {
+                badge.style.background = 'var(--olive-light)';
+                badge.style.color = 'var(--text-muted)';
+                badge.style.borderColor = 'var(--olive-border)';
+                dot.style.background = '#9ca3af';
+                fill.style.background = '#9ca3af';
+                text.textContent = 'بانتظار الإدخال';
+                desc.textContent = 'أدخل وزن الزيتون وعدد البيدونات لحساب نسبة الاستخلاص وتقييم الجودة.';
+            } else if (yieldPct < 15) {
+                badge.style.background = 'var(--danger-bg)';
+                badge.style.color = 'var(--danger)';
+                badge.style.borderColor = '#fecaca';
+                dot.style.background = 'var(--danger)';
+                fill.style.background = 'var(--danger)';
+                text.textContent = 'ضعيف (< 15%)';
+                desc.textContent = 'نسبة استخلاص منخفضة؛ غالباً بسبب القطف المبكر أو ارتفاع نسبة الرطوبة في الثمار.';
+            } else if (yieldPct >= 15 && yieldPct < 18) {
+                badge.style.background = 'var(--warning-bg)';
+                badge.style.color = 'var(--warning)';
+                badge.style.borderColor = '#fde68a';
+                dot.style.background = 'var(--warning)';
+                fill.style.background = 'var(--warning)';
+                text.textContent = 'متوسط (15% - 18%)';
+                desc.textContent = 'نسبة استخلاص متوسطة وطبيعية في بداية الموسم أو للأصناف المروية.';
+            } else if (yieldPct >= 18 && yieldPct <= 22) {
+                badge.style.background = 'var(--success-bg)';
+                badge.style.color = 'var(--success)';
+                badge.style.borderColor = '#bbf7d0';
+                dot.style.background = 'var(--success)';
+                fill.style.background = 'var(--success)';
+                text.textContent = 'جيد جداً وممتاز';
+                desc.textContent = 'نسبة استخلاص ممتازة وتدل على نضج مثالي للثمار وجودة عالية في العصر.';
+            } else {
+                badge.style.background = 'var(--exceptional-bg)';
+                badge.style.color = 'var(--exceptional)';
+                badge.style.borderColor = '#99f6e4';
+                dot.style.background = 'var(--exceptional)';
+                fill.style.background = 'var(--exceptional)';
+                text.textContent = 'استثنائي (> 22%)';
+                desc.textContent = 'ما شاء الله! نسبة استخلاص عالية جداً ومميزة لهذا الموسم.';
+            }
+        }
+
+        // ربط الأحداث الفورية
+        [oliveWeightEl, containerCountEl, containerCapacityEl, unitPriceEl, expensesEl, currencyEl].forEach(el => {
+            el.addEventListener('input', () => calculateAll());
+        });
+
+        // زر إعادة الضبط
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            oliveWeightEl.value = 500;
+            containerCountEl.value = 5.25;
+            containerCapacityEl.value = 20;
+            unitPriceEl.value = 90;
+            expensesEl.value = 0;
+            setCurrency('$');
+            setPricingMode('container');
+        });
+
+        // نسخ التقرير الكامل إلى الحافظة
+        let toastTimer;
+        document.getElementById('copyReportBtn').addEventListener('click', () => {
+            const weight = oliveWeightEl.value || 0;
+            const containers = containerCountEl.value || 0;
+            const capacity = containerCapacityEl.value || 20;
+            const currency = currencyEl.value.trim() || '$';
+            const expenses = parseFloat(expensesEl.value) || 0;
+
+            const liters = document.getElementById('totalLitersVal').textContent;
+            const kg = document.getElementById('totalKgVal').textContent;
+            const yieldPct = document.getElementById('weightYieldVal').textContent;
+            const quality = document.getElementById('qualityText').textContent;
+            const per100 = document.getElementById('litersPer100Val').textContent;
+            const perKg = document.getElementById('olivesPerKgVal').textContent;
+            const totalRev = document.getElementById('totalRevenueVal').textContent;
+            const netProfit = document.getElementById('netProfitVal').textContent;
+            const eqContainer = document.getElementById('eqContainerPrice').textContent;
+            const eqLiter = document.getElementById('eqLiterPrice').textContent;
+
+            let report = `🫒 *تقرير مردود الزيتون والأرباح* 🫒\n`;
+            report += `━━━━━━━━━━━━━━\n`;
+            report += `📦 *كمية الزيتون:* ${weight} كغ\n`;
+            report += `🛢️ *الناتج:* ${containers} بيدون (سعة ${capacity} ليتر)\n`;
+            report += `💧 *إجمالي الزيت:* ${liters} ليتر (${kg} كغ صافي)\n`;
+            report += `📊 *نسبة الاستخلاص:* ${yieldPct} (${quality})\n`;
+            report += `⚖️ *المردود:* ${per100} ليتر لكل 100 كغ | ${perKg} كغ زيتون لكل 1 كغ زيت\n`;
+            report += `━━━━━━━━━━━━━━\n`;
+            report += `💰 *التسعير:* ${eqContainer} ${currency} للبيدون (${eqLiter} ${currency} لليتر)\n`;
+            report += `💵 *إجمالي قيمة الزيت:* ${totalRev} ${currency}\n`;
+            if (expenses > 0) {
+                report += `🧾 *المصاريف:* ${formatMoney(expenses)} ${currency}\n`;
+                report += `✅ *صافي الربح:* ${netProfit} ${currency}\n`;
+            }
+
+            const showToast = () => {
+                const toast = document.getElementById('toast');
+                clearTimeout(toastTimer);
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+            };
+            const fallbackCopy = () => {
+                const tempArea = document.createElement('textarea');
+                tempArea.value = report;
+                tempArea.style.position = 'fixed';
+                tempArea.style.opacity = '0';
+                document.body.appendChild(tempArea);
+                tempArea.select();
+                try { document.execCommand('copy'); showToast(); } catch (e) { console.error('Copy failed', e); }
+                document.body.removeChild(tempArea);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(report).then(showToast).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+        });
+
+        // حفظ آخر القيم المدخلة على الجهاز حتى تبقى عند فتح التطبيق مرة أخرى
+        const STORE_KEY = 'oliveCalcState';
+        function saveState() {
+            try {
+                localStorage.setItem(STORE_KEY, JSON.stringify({
+                    w: oliveWeightEl.value, c: containerCountEl.value, cap: containerCapacityEl.value,
+                    p: unitPriceEl.value, e: expensesEl.value, cur: currencyEl.value, mode: pricingMode
+                }));
+            } catch (e) {}
+        }
+        function loadState() {
+            try {
+                const st = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+                if (!st) return;
+                oliveWeightEl.value = st.w; containerCountEl.value = st.c; containerCapacityEl.value = st.cap;
+                unitPriceEl.value = st.p; expensesEl.value = st.e; currencyEl.value = st.cur;
+                document.querySelectorAll('.curr-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.trim() === st.cur));
+                if (st.mode === 'liter' || st.mode === 'container') pricingMode = st.mode;
+                setPricingMode(pricingMode);
+            } catch (e) {}
+        }
+        const _calc = calculateAll;
+        calculateAll = function () { _calc(); saveState(); };
+
+        // تسجيل Service Worker للعمل بدون إنترنت
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+        }
+
+        // التشغيل الابتدائي عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', () => { loadState(); calculateAll(); });
+    </script>
+</body>
+</html>
